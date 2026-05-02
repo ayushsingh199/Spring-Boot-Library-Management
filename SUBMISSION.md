@@ -34,7 +34,7 @@ We use a `CommandLineRunner` bean in the `DataLoader` class to automatically pop
 - **Inner Join Optimization**: Ensuring that the author data was fetched efficiently without N+1 problems was handled by using a custom `@Query` with an INNER JOIN.
 
 ## Github URL
-*(Placeholder: You can push this code to your repository and paste the link here)*
+https://github.com/ayushsingh199/Spring-Boot-Library-Management.git
 
 ---
 **Note**: You can export this document to PDF using any Markdown editor or by printing to PDF from a browser.
