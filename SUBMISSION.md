@@ -1,40 +1,87 @@
-# Submission: Spring Boot Library Management System
+# Project Submission: Library Management System 📚
 
-## Entity Relationship Design
-The application manages two primary entities: **Author** and **Book**.
-- **Author**: Represents a writer with a unique ID, name, and biography.
-- **Book**: Represents a literary work with a title, genre, price, and a reference to its author.
-- **Relationship**: A **One-to-Many** relationship exists between Author and Book. One author can write multiple books, while each book is associated with exactly one author. This is implemented using JPA `@OneToMany` (in `Author`) and `@ManyToOne` (in `Book`).
-
-## Implementation Details
-
-### 1. Populate Database
-We use a `CommandLineRunner` bean in the `DataLoader` class to automatically populate the H2 in-memory database with 10 authors and 10 books upon application startup. This ensures the application is ready for testing immediately.
-
-### 2. Create Operation
-- **Form**: Implemented in `form.jsp` and `author-form.jsp`.
-- **Controller**: `LibraryController.saveBook()` handles the POST request.
-- **Exception Handling**: A `try-catch` block in the controller catches data integrity violations (e.g., missing author) and returns the user to the form with an error message.
-
-### 3. Read Operation
-- **List View**: `list.jsp` displays all books and authors using JSTL `<c:forEach>`.
-- **Inner Join**: The `BookRepository` includes a custom JPQL query:
-  ```java
-  @Query("SELECT b FROM Book b INNER JOIN b.author a")
-  List<Book> findAllBooksWithAuthors();
-  ```
-  This ensures that we fetch books along with their associated author data in a single optimized query.
-
-### 4. Update Operation
-- **Functionality**: Users can click "Edit" on any book in the list.
-- **Controller**: `LibraryController.showEditBookForm()` fetches the existing entity and binds it to the form. `saveBook()` then handles the update (JPA handles the merge automatically since the ID is present).
-
-## Challenges Faced & Solutions
-- **JSP Support in Spring Boot 3**: Spring Boot 3 requires specific dependencies for JSP (Jakarta Namespace). I resolved this by using the `jakarta.servlet.jsp.jstl` dependencies instead of the older `javax` ones.
-- **Inner Join Optimization**: Ensuring that the author data was fetched efficiently without N+1 problems was handled by using a custom `@Query` with an INNER JOIN.
-
-## Github URL
-https://github.com/ayushsingh199/Spring-Boot-Library-Management.git
+**Author:** Ayush Singh  
+**GitHub URL:** [https://github.com/ayushsingh199/Spring-Boot-Library-Management](https://github.com/ayushsingh199/Spring-Boot-Library-Management)
 
 ---
-**Note**: You can export this document to PDF using any Markdown editor or by printing to PDF from a browser.
+
+## 1. Entity Relationship Design
+The system manages two primary entities with a **One-to-Many** relationship:
+- **Author**: Master entity with `id`, `name`, and `bio`.
+- **Book**: Transactional entity with `id`, `title`, `genre`, `price`, and a foreign key `author_id`.
+
+```mermaid
+erDiagram
+    AUTHOR ||--o{ BOOK : writes
+    AUTHOR {
+        Long id PK
+        String name
+        String bio
+    }
+    BOOK {
+        Long id PK
+        String title
+        String genre
+        Double price
+        Long author_id FK
+    }
+```
+
+---
+
+## 2. Implementation Details
+
+### A. Create Operation
+- **Form**: Implemented in `form.jsp` using JSTL to bind the `Book` object.
+- **Controller**: `saveBook()` method in `LibraryController`.
+```java
+@PostMapping("/save-book")
+public String saveBook(@ModelAttribute("book") Book book, Model model) {
+    try {
+        libraryService.saveBook(book);
+        return "redirect:/";
+    } catch (Exception e) {
+        model.addAttribute("error", "Error saving book: " + e.getMessage());
+        return "form";
+    }
+}
+```
+*(Insert screenshot of Add Book form here)*
+
+### B. Read Operation
+- **Listing**: All books are displayed in `list.jsp`.
+- **Inner Join**: Optimized data fetching in `BookRepository`.
+```java
+@Query("SELECT b FROM Book b INNER JOIN b.author a")
+List<Book> findAllBooksWithAuthors();
+```
+*(Insert screenshot of Book List here)*
+
+### C. Update Operation
+- **Functionality**: Reuses the form logic but pre-fills data using the existing entity ID.
+- **Controller**:
+```java
+@GetMapping("/edit-book/{id}")
+public String showEditBookForm(@PathVariable Long id, Model model) {
+    Book book = libraryService.getBookById(id);
+    model.addAttribute("book", book);
+    return "form";
+}
+```
+*(Insert screenshot of Edit Book form here)*
+
+---
+
+## 3. Challenges Faced & Solutions
+1.  **JSP Configuration**: Spring Boot 3 uses Jakarta namespaces. I had to ensure the correct `jakarta.servlet.jsp.jstl` dependencies were used in `pom.xml`.
+2.  **N+1 Query Issue**: Initially, fetching books caused multiple queries for authors. I resolved this using an `INNER JOIN` in the JPA Repository.
+
+---
+
+## 4. Github URL
+[https://github.com/ayushsingh199/Spring-Boot-Library-Management](https://github.com/ayushsingh199/Spring-Boot-Library-Management)
+
+---
+**How to export to PDF:**
+1. Open this file in VS Code or any Markdown editor.
+2. Use "Export to PDF" or open the `SUBMISSION.html` file and print to PDF.

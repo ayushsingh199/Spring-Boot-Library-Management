@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Spring Boot Library Management - Submission Report</title>
+    <style>
+        body { font-family: 'Helvetica', 'Arial', sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 40px auto; padding: 0 20px; }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        h2 { color: #2980b9; margin-top: 30px; }
+        h3 { color: #16a085; }
+        code { background: #f4f4f4; border: 1px solid #ddd; border-left: 3px solid #f36d33; color: #666; page-break-inside: avoid; font-family: monospace; padding: 2px 4px; display: inline-block; }
+        pre { background: #f4f4f4; border: 1px solid #ddd; border-left: 3px solid #f36d33; color: #666; page-break-inside: avoid; font-family: monospace; font-size: 13px; line-height: 1.6; margin-bottom: 1.6em; max-width: 100%; overflow: auto; padding: 1em 1.5em; display: block; word-wrap: break-word; }
+        .screenshot-placeholder { border: 2px dashed #ccc; padding: 40px; text-align: center; color: #999; margin: 20px 0; border-radius: 8px; }
+        .footer { margin-top: 50px; font-size: 12px; color: #7f8c8d; text-align: center; border-top: 1px solid #eee; padding-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Project Submission: Library Management System</h1>
+    
+    <p><strong>Prepared by:</strong> Ayush Singh</p>
+    <p><strong>GitHub URL:</strong> <a href="https://github.com/ayushsingh199/Spring-Boot-Library-Management.git">https://github.com/ayushsingh199/Spring-Boot-Library-Management.git</a></p>
+
+    <h2>1. Entity Relationship Design</h2>
+    <p>The system is built on two core entities: <code>Author</code> and <code>Book</code>. They are connected via a <strong>One-to-Many</strong> relationship.</p>
+    <ul>
+        <li><strong>Author</strong>: Master entity containing writer details.</li>
+        <li><strong>Book</strong>: Transactional entity containing book details and a foreign key to the Author.</li>
+    </ul>
+
+    <h2>2. Implementation Details</h2>
+
+    <h3>A. Database Population</h3>
+    <p>We used <code>CommandLineRunner</code> to seed the H2 database with 10 authors and 10 books on startup.</p>
+
+    <h3>B. Create Operation</h3>
+    <p>Handled by <code>LibraryController.saveBook()</code>. It accepts a Book object bound from the JSP form and saves it via the service layer.</p>
+    <pre>
+@PostMapping("/save-book")
+public String saveBook(@ModelAttribute("book") Book book, Model model) {
+    try {
+        libraryService.saveBook(book);
+        return "redirect:/";
+    } catch (Exception e) {
+        model.addAttribute("error", "Error saving book: " + e.getMessage());
+        return "form";
+    }
+}
+    </pre>
+    <div class="screenshot-placeholder">[INSERT SCREENSHOT OF ADD BOOK FORM HERE]</div>
+
+    <h3>C. Read Operation</h3>
+    <p>Implemented using a custom Inner Join query to fetch authors along with books in a single query.</p>
+    <pre>
+@Query("SELECT b FROM Book b INNER JOIN b.author a")
+List&lt;Book&gt; findAllBooksWithAuthors();
+    </pre>
+    <div class="screenshot-placeholder">[INSERT SCREENSHOT OF BOOK LIST VIEW HERE]</div>
+
+    <h3>D. Update Operation</h3>
+    <p>Existing book details are fetched by ID, displayed in the same form used for creation, and then saved back to the database.</p>
+    <div class="screenshot-placeholder">[INSERT SCREENSHOT OF EDIT BOOK FORM HERE]</div>
+
+    <h2>3. Challenges Faced & Solutions</h2>
+    <ul>
+        <li><strong>Dependency Management</strong>: Upgrading to Spring Boot 3 meant switching from <code>javax.servlet</code> to <code>jakarta.servlet</code>. This was resolved by updating the JSTL and Jasper dependencies in the POM.</li>
+        <li><strong>Performance Optimization</strong>: To avoid the N+1 problem when listing books with authors, I implemented a custom JPQL join query in the repository layer.</li>
+    </ul>
+
+    <h2>4. Testing Results</h2>
+    <p>The application was tested using JUnit and Mockito for service-level logic, and manual browser testing for the UI operations.</p>
+    <div class="screenshot-placeholder">[INSERT SCREENSHOT OF SUCCESSFUL UNIT TESTS HERE]</div>
+
+    <div class="footer">
+        Generated for Library Management System Assignment - 2026
+    </div>
+</body>
+</html>
